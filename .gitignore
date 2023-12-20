@@ -1,0 +1,7 @@
+.idea/
+**/__pycache__/
+__init__.py
+.env
+.DS_Store
+db.sqlite3
+**/migrations/

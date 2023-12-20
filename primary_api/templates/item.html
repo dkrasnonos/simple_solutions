@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+    Товар
+{%  endblock %}
+{% block content %}
+    {% if id %}
+        <h1>Страница товара</h1>
+        <p>Наименование - {{ name }}</p>
+        <p>Описание - {{ description }}</p>
+        <p>Цена - {{ price }} руб.</p>
+        <button id="checkout-button">Купить</button>
+    {% endif %}
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript">
+        document.getElementById('checkout-button').addEventListener('click', function () {
+        fetch('/buy/{{ id }}')
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (session) {
+                var stripe = Stripe("{{ STRIPE_PUBLISHABLE_KEY }}");
+                stripe.redirectToCheckout({ 'sessionId': session.sessionId })
+            });
+        });
+    </script>
+{% endblock %}
