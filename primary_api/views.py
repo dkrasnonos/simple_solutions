@@ -1,6 +1,5 @@
 import stripe
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib import messages
+
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
@@ -23,7 +22,7 @@ class BuyItem(APIView):
 
     def get(self, request, *args, **kwargs):
         item = get_object_or_404(Item, pk=kwargs.get('id'))
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[{
@@ -43,3 +42,20 @@ class BuyItem(APIView):
         )
 
         return JsonResponse({'sessionId': checkout_session['id']})
+
+
+class Order(APIView):
+    def get(self, request, *args, **kwargs):
+        context = {'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY}
+        return render(request, 'order.html', context)
+
+
+class IntentPayment(APIView):
+    def post(self, request):
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        intent = stripe.PaymentIntent.create(
+            amount=1099,
+            currency="usd",
+            payment_method_types=["card"],
+        )
+        return JsonResponse({'clientSecret': intent.client_secret})

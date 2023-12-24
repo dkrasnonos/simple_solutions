@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Item(models.Model):
     name = models.CharField(max_length=50, verbose_name='Наименование')
     description = models.CharField(max_length=200, blank=True, verbose_name='Описание')
