@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Оплата{% endblock %}
 {% block content %}
-
+    <link rel="stylesheet" href={% static "intent.css" %} />
     <form id="payment-form">
         <h2>Cписок товаров</h2>
         {% for item in items %}

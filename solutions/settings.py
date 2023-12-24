@@ -115,6 +115,8 @@ REST_FRAMEWORK = {
 
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_SECRET_KEY_RUB = os.getenv('STRIPE_SECRET_KEY_RUB')
+STRIPE_SECRET_KEY_USD = os.getenv('STRIPE_SECRET_KEY_USD')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
