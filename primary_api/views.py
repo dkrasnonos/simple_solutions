@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from primary_api.models import Item
+from primary_api.models import Item, Order, OrderItem
 from solutions import settings
 
 
@@ -68,18 +68,50 @@ class BuyItem(APIView):
         return JsonResponse({'sessionId': checkout_session['id']})
 
 
-class Order(APIView):
+class OrderView(APIView):
     def get(self, request, *args, **kwargs):
-        context = {'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY}
+        tax = ''
+        discount = ''
+        total_price = ''
+        items = list()
+
+        try:
+            order = Order.objects.get(id=kwargs.get('id'))
+            order_items = OrderItem.objects.filter(order=order)
+            for order_item in order_items:
+                for i in range (0, order_item.quantity):
+                    items.append(order_item.item)
+
+
+            discount = sum(discount.amount for discount in order.discounts.all())
+            taxes = order.taxes.all()
+            total_price = order.get_total_price()
+        except Exception:
+            return JsonResponse({'info': f'Не удалсоь получить данные по заказу {order.id}'}, encoder='utf-8')
+
+        context = {'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY, 'order_id': order.id,
+                   'items': items, 'taxes': taxes, 'discount': discount, 'total_price': total_price}
         return render(request, 'order.html', context)
 
 
 class IntentPayment(APIView):
     def post(self, request):
+        order_id = int(request.data['order'][0]['id'])
+        try:
+            order = Order.objects.get(id=order_id)
+            total_price = order.get_total_price()
+            items = list()
+            order_items = OrderItem.objects.filter(order=order)
+            for order_item in order_items:
+                for i in range(0, order_item.quantity):
+                    items.append(order_item.item)
+
+        except Exception:
+            return JsonResponse({'info': 'Заказ не найден или устарел'}, status=400)
         stripe.api_key = settings.STRIPE_SECRET_KEY
         intent = stripe.PaymentIntent.create(
-            amount=1099,
-            currency="usd",
+            amount=int(total_price) * 100,
+            currency=items[0].currency.lower(),
             payment_method_types=["card"],
         )
         return JsonResponse({'clientSecret': intent.client_secret})

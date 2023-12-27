@@ -10,7 +10,7 @@
         {% endfor %}
         <p>Налог - {{ order.tax }}</p>
         <p>Скидка - {{ order.discount }}</p>
-        <p>Итого - {{ total }} {{ item.currency }}</p>
+        <p>Итого - {{ total_price }} {{ item.currency }}</p>
         {% csrf_token %}
         <div id="payment-element">
         </div>
@@ -23,7 +23,7 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript">
         const stripe = Stripe("{{ STRIPE_PUBLISHABLE_KEY }}");
-        const items = [{id: 1}];
+        const order = [{id: "{{ order_id }}" }];
         const csrftoken = '{{ csrf_token }}';
         let elements;
         initialize();
@@ -40,7 +40,7 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrftoken
                 },
-                body: JSON.stringify({items}),
+                body: JSON.stringify({order}),
             });
             const {clientSecret} = await response.json();
             const appearance = {
